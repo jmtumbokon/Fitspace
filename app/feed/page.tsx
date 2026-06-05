@@ -1,10 +1,35 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import PostCard from '@/components/PostCard'
 import { createClient } from '@/lib/supabase/server'
-import type { Post } from '@/types'
+import { timeAgo } from '@/lib/utils'
+import type { Closet } from '@/components/ClosetCard'
+import ClosetWall from './ClosetWall'
 
-const FEED_LIMIT = 24
+// The feed IS a big shared closet: recent posts are grouped by owner and
+// each person renders as one closet module on the wall.
+
+const POST_POOL = 80 // recent posts to group into closets
+const GARMENTS_PER_CLOSET = 4
+const PIECES_PER_PEEK = 8
+
+type FeedPostRow = {
+  id: string
+  user_id: string
+  image_url: string
+  caption: string | null
+  style_tags: string[]
+  event_tags: string[]
+  created_at: string
+  profile: {
+    id: string
+    username: string
+    display_name: string | null
+    avatar_url: string | null
+    style_personas: string[]
+    posts_count: number
+    followers_count: number
+  } | null
+}
 
 export default async function FeedPage() {
   const supabase = createClient()
@@ -13,64 +38,101 @@ export default async function FeedPage() {
     redirect('/login')
   }
 
-  // RLS hides other users' hidden posts; triggers keep the counters fresh.
   const { data, error } = await supabase
     .from('posts')
-    .select('*, profile:profiles!posts_user_id_fkey(*)')
+    .select(
+      'id, user_id, image_url, caption, style_tags, event_tags, created_at, profile:profiles!posts_user_id_fkey(id, username, display_name, avatar_url, style_personas, posts_count, followers_count)'
+    )
     .order('created_at', { ascending: false })
-    .limit(FEED_LIMIT)
+    .limit(POST_POOL)
 
   if (error) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-          Couldn&apos;t load the feed: {error.message}
+      <div className="mx-auto max-w-[1240px] px-5 py-8 md:px-10">
+        <p className="rounded-lg bg-rust/10 px-3 py-2 text-sm text-rust">
+          Couldn&apos;t open the wardrobe: {error.message}
         </p>
       </div>
     )
   }
 
-  const posts = (data ?? []) as unknown as Post[]
-
-  // Current user's like/save state for the fetched posts, one query each
-  if (posts.length > 0) {
-    const postIds = posts.map((post) => post.id)
-    const [{ data: likes }, { data: saves }] = await Promise.all([
-      supabase.from('likes').select('post_id').eq('user_id', user.id).in('post_id', postIds),
-      supabase.from('saves').select('post_id').eq('user_id', user.id).in('post_id', postIds),
-    ])
-    const likedIds = new Set((likes ?? []).map((like) => like.post_id))
-    const savedIds = new Set((saves ?? []).map((save) => save.post_id))
-    for (const post of posts) {
-      post.is_liked = likedIds.has(post.id)
-      post.is_saved = savedIds.has(post.id)
+  // Group posts by owner, newest first — one closet per person
+  const closetsByUser = new Map<string, Closet>()
+  for (const row of (data ?? []) as unknown as FeedPostRow[]) {
+    if (!row.profile) continue
+    let closet = closetsByUser.get(row.user_id)
+    if (!closet) {
+      closet = {
+        userId: row.user_id,
+        username: row.profile.username,
+        displayName: row.profile.display_name,
+        avatarUrl: row.profile.avatar_url,
+        persona: row.profile.style_personas[0] ?? null,
+        postsCount: row.profile.posts_count,
+        followersCount: row.profile.followers_count,
+        tag: row.event_tags[0] ?? row.style_tags[0] ?? null,
+        garments: [],
+        pieces: [],
+      }
+      closetsByUser.set(row.user_id, closet)
     }
+    if (closet.garments.length < GARMENTS_PER_CLOSET) {
+      closet.garments.push({
+        id: row.id,
+        imageUrl: row.image_url,
+        label: row.caption ?? 'fit',
+      })
+    }
+    if (closet.pieces.length < PIECES_PER_PEEK) {
+      closet.pieces.push({
+        id: row.id,
+        imageUrl: row.image_url,
+        label: row.caption?.slice(0, 40) ?? row.style_tags[0] ?? 'a fit',
+        sub: timeAgo(row.created_at),
+      })
+    }
+  }
+  const closets = Array.from(closetsByUser.values())
+
+  // Which of these closets the viewer already follows
+  let followedIds: string[] = []
+  if (closets.length > 0) {
+    const { data: follows } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', user.id)
+      .in('following_id', closets.map((closet) => closet.userId))
+    followedIds = (follows ?? []).map((follow) => follow.following_id)
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-[1240px] px-5 pb-20 md:px-10">
       {/* Mobile-only wordmark header; desktop has the sidebar brand */}
-      <header className="sticky top-0 z-40 border-b border-neutral-200 bg-white/90 px-4 py-3 backdrop-blur md:hidden">
-        <h1 className="text-xl font-bold tracking-tight">FitSpace</h1>
+      <header className="sticky top-0 z-40 -mx-5 border-b border-line bg-bg/85 px-5 py-3 backdrop-blur-[14px] md:hidden">
+        <h1 className="font-serif text-[23px] font-medium tracking-[-0.4px]">FitSpace</h1>
       </header>
 
-      {posts.length === 0 ? (
+      {/* View head */}
+      <div className="mb-7 border-b border-line pb-4 pt-7">
+        <h2 className="font-serif text-[27px] font-medium tracking-[-0.4px]">The wardrobe</h2>
+        <p className="mt-[3px] text-[13.5px] text-ink-soft">
+          One big shared closet · peek into anyone&apos;s
+        </p>
+      </div>
+
+      {closets.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-4 py-24 text-center">
-          <p className="text-lg font-semibold">No fits yet</p>
-          <p className="text-sm text-neutral-500">Be the first to share an outfit.</p>
+          <p className="font-serif text-xl">The wardrobe is empty</p>
+          <p className="text-sm text-ink-soft">Be the first to hang something on the rail.</p>
           <Link
             href="/post"
-            className="mt-2 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white hover:opacity-85"
+            className="mt-2 rounded-pill bg-ink px-5 py-2.5 text-sm font-semibold text-bg transition-colors hover:bg-rust"
           >
-            Share a fit
+            + Add a fit
           </Link>
         </div>
       ) : (
-        <div className="flex flex-col gap-2 md:py-6">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
+        <ClosetWall closets={closets} viewerId={user.id} initialFollowing={followedIds} />
       )}
     </div>
   )

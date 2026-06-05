@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${fraunces.variable} ${hanken.variable} min-h-screen bg-white text-neutral-900 antialiased`}
+        className={`${fraunces.variable} ${hanken.variable} min-h-screen bg-bg font-sans text-ink antialiased`}
       >
         <AppShell>{children}</AppShell>
       </body>

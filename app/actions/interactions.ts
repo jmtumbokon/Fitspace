@@ -43,6 +43,38 @@ export async function unlikePost(postId: string): Promise<{ error: string | null
   return { error: null }
 }
 
+export async function followUser(userId: string): Promise<{ error: string | null }> {
+  const { supabase, user } = await requireUser()
+  if (!user) return { error: 'Not authenticated' }
+  if (user.id === userId) return { error: 'You can’t follow yourself.' }
+
+  // Trigger maintains follower/following counts and the notification
+  const { error } = await supabase
+    .from('follows')
+    .upsert(
+      { follower_id: user.id, following_id: userId },
+      { onConflict: 'follower_id,following_id', ignoreDuplicates: true }
+    )
+  if (error) return { error: error.message }
+
+  revalidatePath('/feed')
+  return { error: null }
+}
+
+export async function unfollowUser(userId: string): Promise<{ error: string | null }> {
+  const { supabase, user } = await requireUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await supabase
+    .from('follows')
+    .delete()
+    .match({ follower_id: user.id, following_id: userId })
+  if (error) return { error: error.message }
+
+  revalidatePath('/feed')
+  return { error: null }
+}
+
 export async function savePost(postId: string): Promise<{ error: string | null }> {
   const { supabase, user } = await requireUser()
   if (!user) return { error: 'Not authenticated' }
