@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createClient()
   const { data } = await supabase
     .from('posts')
-    .select('caption, profile:profiles(username)')
+    .select('caption, profile:profiles!posts_user_id_fkey(username)')
     .eq('id', params.id)
     .maybeSingle()
   if (!data) return { title: 'Post — FitSpace' }
@@ -38,7 +38,7 @@ export default async function PostDetailPage({ params }: Props) {
 
   const { data } = await supabase
     .from('posts')
-    .select('*, profile:profiles(*), outfit_items(*)')
+    .select('*, profile:profiles!posts_user_id_fkey(*), outfit_items(*)')
     .eq('id', params.id)
     .maybeSingle()
 
@@ -56,7 +56,7 @@ export default async function PostDetailPage({ params }: Props) {
   const [{ data: comments }, { count: likeCount }, { data: savedRow }] = await Promise.all([
     supabase
       .from('comments')
-      .select('*, profile:profiles(username, display_name, avatar_url)')
+      .select('*, profile:profiles!comments_user_id_fkey(username, display_name, avatar_url)')
       .eq('post_id', post.id)
       .order('created_at', { ascending: true }),
     supabase

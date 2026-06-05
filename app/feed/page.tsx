@@ -16,7 +16,7 @@ export default async function FeedPage() {
   // RLS hides other users' hidden posts; triggers keep the counters fresh.
   const { data, error } = await supabase
     .from('posts')
-    .select('*, profile:profiles(*)')
+    .select('*, profile:profiles!posts_user_id_fkey(*)')
     .order('created_at', { ascending: false })
     .limit(FEED_LIMIT)
 

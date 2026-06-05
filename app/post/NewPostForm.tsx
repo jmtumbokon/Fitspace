@@ -6,7 +6,7 @@ import { publishPost, type NewOutfitItem } from '@/app/actions/posts'
 import { createClient } from '@/lib/supabase/client'
 import {
   MAX_POST_IMAGES,
-  OUTFIT_PHOTOS_BUCKET,
+  OUTFITS_BUCKET,
   SEASONS,
   STYLE_PERSONAS,
 } from '@/lib/constants'
@@ -77,12 +77,12 @@ export default function NewPostForm({ userId }: { userId: string }) {
         const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
         const path = `${userId}/${Date.now()}-${imageUrls.length}.${ext}`
         const { error: uploadError } = await supabase.storage
-          .from(OUTFIT_PHOTOS_BUCKET)
+          .from(OUTFITS_BUCKET)
           .upload(path, file, { contentType: file.type, upsert: false })
         if (uploadError) throw new Error(uploadError.message)
 
         const { data: { publicUrl } } = supabase.storage
-          .from(OUTFIT_PHOTOS_BUCKET)
+          .from(OUTFITS_BUCKET)
           .getPublicUrl(path)
         imageUrls.push(publicUrl)
       }

@@ -6,6 +6,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: '*.supabase.co',
       },
+      {
+        // Seed data placeholder images
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
     ],
   },
 }

@@ -14,6 +14,8 @@ export const SEASONS: Season[] = ['spring', 'summer', 'fall', 'winter']
 
 export const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/
 
-export const OUTFIT_PHOTOS_BUCKET = 'outfit-photos'
+// Storage buckets — RLS requires upload paths shaped like {auth.uid()}/...
+export const OUTFITS_BUCKET = 'outfits'
+export const AVATARS_BUCKET = 'avatars'
 
 export const MAX_POST_IMAGES = 4

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { MAX_POST_IMAGES, SEASONS } from '@/lib/constants'
+import { MAX_POST_IMAGES, OUTFITS_BUCKET, SEASONS } from '@/lib/constants'
 import type { Database } from '@/types/database'
 
 type OutfitItemInsert = Database['public']['Tables']['outfit_items']['Insert']
@@ -32,8 +32,9 @@ export async function publishPost(input: NewPostInput): Promise<{ error: string 
     return { error: 'Not authenticated.' }
   }
 
-  // Images are uploaded client-side; only accept URLs from our own storage.
-  const storagePrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/`
+  // Images are uploaded client-side; only accept URLs from the outfits
+  // bucket under this user's own folder (mirrors the storage RLS policy).
+  const storagePrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${OUTFITS_BUCKET}/${user.id}/`
   const imageUrls = input.imageUrls.slice(0, MAX_POST_IMAGES)
   if (imageUrls.length === 0) {
     return { error: 'A post needs at least one photo.' }
