@@ -1,3 +1,6 @@
+// FitSpace — Supabase Database types
+// Hand-maintained to match schema.sql. Update this file whenever the schema changes.
+
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export interface Database {
@@ -18,6 +21,7 @@ export interface Database {
           followers_count: number
           following_count: number
           posts_count: number
+          onboarded: boolean
           created_at: string
         }
         Insert: {
@@ -34,6 +38,7 @@ export interface Database {
           followers_count?: number
           following_count?: number
           posts_count?: number
+          onboarded?: boolean
           created_at?: string
         }
         Update: {
@@ -50,6 +55,7 @@ export interface Database {
           followers_count?: number
           following_count?: number
           posts_count?: number
+          onboarded?: boolean
           created_at?: string
         }
         Relationships: []
@@ -64,13 +70,17 @@ export interface Database {
           event_tags: string[]
           style_tags: string[]
           aesthetic_tags: string[]
+          challenge_tag: string | null
           season: string | null
           total_outfit_cost: number | null
+          ratings_enabled: boolean
+          hidden: boolean
           likes_count: number
           comments_count: number
           saves_count: number
           rating_avg: number | null
           rating_count: number
+          search_tsv: unknown // tsvector, maintained by trigger — never set from app code
           created_at: string
         }
         Insert: {
@@ -82,13 +92,17 @@ export interface Database {
           event_tags?: string[]
           style_tags?: string[]
           aesthetic_tags?: string[]
+          challenge_tag?: string | null
           season?: string | null
           total_outfit_cost?: number | null
+          ratings_enabled?: boolean
+          hidden?: boolean
           likes_count?: number
           comments_count?: number
           saves_count?: number
           rating_avg?: number | null
           rating_count?: number
+          search_tsv?: unknown
           created_at?: string
         }
         Update: {
@@ -100,13 +114,17 @@ export interface Database {
           event_tags?: string[]
           style_tags?: string[]
           aesthetic_tags?: string[]
+          challenge_tag?: string | null
           season?: string | null
           total_outfit_cost?: number | null
+          ratings_enabled?: boolean
+          hidden?: boolean
           likes_count?: number
           comments_count?: number
           saves_count?: number
           rating_avg?: number | null
           rating_count?: number
+          search_tsv?: unknown
           created_at?: string
         }
         Relationships: [
@@ -129,6 +147,7 @@ export interface Database {
           price: number | null
           currency: string
           purchase_url: string | null
+          affiliate_url: string | null
           position_x: number | null
           position_y: number | null
           created_at: string
@@ -142,6 +161,7 @@ export interface Database {
           price?: number | null
           currency?: string
           purchase_url?: string | null
+          affiliate_url?: string | null
           position_x?: number | null
           position_y?: number | null
           created_at?: string
@@ -155,6 +175,7 @@ export interface Database {
           price?: number | null
           currency?: string
           purchase_url?: string | null
+          affiliate_url?: string | null
           position_x?: number | null
           position_y?: number | null
           created_at?: string
@@ -269,6 +290,13 @@ export interface Database {
             isOneToOne: false
             referencedRelation: 'profiles'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'outfit_logs_post_id_fkey'
+            columns: ['post_id']
+            isOneToOne: false
+            referencedRelation: 'posts'
+            referencedColumns: ['id']
           }
         ]
       }
@@ -323,17 +351,17 @@ export interface Database {
         }
         Relationships: [
           {
-            foreignKeyName: 'likes_post_id_fkey'
-            columns: ['post_id']
-            isOneToOne: false
-            referencedRelation: 'posts'
-            referencedColumns: ['id']
-          },
-          {
             foreignKeyName: 'likes_user_id_fkey'
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'likes_post_id_fkey'
+            columns: ['post_id']
+            isOneToOne: false
+            referencedRelation: 'posts'
             referencedColumns: ['id']
           }
         ]
@@ -362,17 +390,50 @@ export interface Database {
         }
         Relationships: [
           {
+            foreignKeyName: 'comments_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
             foreignKeyName: 'comments_post_id_fkey'
             columns: ['post_id']
             isOneToOne: false
             referencedRelation: 'posts'
             referencedColumns: ['id']
-          },
+          }
+        ]
+      }
+      saves: {
+        Row: {
+          user_id: string
+          post_id: string
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          post_id: string
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          post_id?: string
+          created_at?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: 'comments_user_id_fkey'
+            foreignKeyName: 'saves_user_id_fkey'
             columns: ['user_id']
             isOneToOne: false
             referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'saves_post_id_fkey'
+            columns: ['post_id']
+            isOneToOne: false
+            referencedRelation: 'posts'
             referencedColumns: ['id']
           }
         ]
@@ -517,6 +578,13 @@ export interface Database {
         }
         Relationships: [
           {
+            foreignKeyName: 'battle_votes_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
             foreignKeyName: 'battle_votes_battle_id_fkey'
             columns: ['battle_id']
             isOneToOne: false
@@ -524,10 +592,10 @@ export interface Database {
             referencedColumns: ['id']
           },
           {
-            foreignKeyName: 'battle_votes_user_id_fkey'
-            columns: ['user_id']
+            foreignKeyName: 'battle_votes_voted_for_fkey'
+            columns: ['voted_for']
             isOneToOne: false
-            referencedRelation: 'profiles'
+            referencedRelation: 'posts'
             referencedColumns: ['id']
           }
         ]
@@ -559,17 +627,121 @@ export interface Database {
         }
         Relationships: [
           {
+            foreignKeyName: 'ratings_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
             foreignKeyName: 'ratings_post_id_fkey'
+            columns: ['post_id']
+            isOneToOne: false
+            referencedRelation: 'posts'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          actor_id: string
+          type: 'like' | 'comment' | 'follow'
+          post_id: string | null
+          read: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          actor_id: string
+          type: 'like' | 'comment' | 'follow'
+          post_id?: string | null
+          read?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          actor_id?: string
+          type?: 'like' | 'comment' | 'follow'
+          post_id?: string | null
+          read?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'notifications_actor_id_fkey'
+            columns: ['actor_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'notifications_post_id_fkey'
+            columns: ['post_id']
+            isOneToOne: false
+            referencedRelation: 'posts'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      reports: {
+        Row: {
+          id: string
+          reporter_id: string
+          post_id: string | null
+          comment_id: string | null
+          reason: string
+          resolved: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          reporter_id: string
+          post_id?: string | null
+          comment_id?: string | null
+          reason: string
+          resolved?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          reporter_id?: string
+          post_id?: string | null
+          comment_id?: string | null
+          reason?: string
+          resolved?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'reports_reporter_id_fkey'
+            columns: ['reporter_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'reports_post_id_fkey'
             columns: ['post_id']
             isOneToOne: false
             referencedRelation: 'posts'
             referencedColumns: ['id']
           },
           {
-            foreignKeyName: 'ratings_user_id_fkey'
-            columns: ['user_id']
+            foreignKeyName: 'reports_comment_id_fkey'
+            columns: ['comment_id']
             isOneToOne: false
-            referencedRelation: 'profiles'
+            referencedRelation: 'comments'
             referencedColumns: ['id']
           }
         ]
