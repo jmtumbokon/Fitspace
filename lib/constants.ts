@@ -1,4 +1,4 @@
-import type { BodyType, Season, StylePersona } from '@/types'
+import type { BodyType, Season, StylePersona, WardrobeCategory } from '@/types'
 
 export const STYLE_PERSONAS: StylePersona[] = [
   'streetwear', 'minimalist', 'cottagecore', 'dark academia',
@@ -11,6 +11,10 @@ export const BODY_TYPES: BodyType[] = [
 ]
 
 export const SEASONS: Season[] = ['spring', 'summer', 'fall', 'winter']
+
+export const WARDROBE_CATEGORIES: WardrobeCategory[] = [
+  'tops', 'bottoms', 'shoes', 'outerwear', 'accessories', 'dresses', 'activewear',
+]
 
 export const USERNAME_REGEX = /^[a-z0-9_]{3,20}$/
 
