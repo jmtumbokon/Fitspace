@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import LikeButton from '@/components/LikeButton'
 import SaveButton from '@/components/SaveButton'
 import { formatPrice, timeAgo } from '@/lib/utils'
@@ -37,7 +38,7 @@ export default function PostCard({ post }: { post: Post }) {
       </div>
 
       {/* Image */}
-      <div className="relative aspect-[4/5] bg-neutral-100">
+      <Link href={`/post/${post.id}`} className="relative block aspect-[4/5] bg-neutral-100">
         <Image
           src={post.image_url}
           alt={post.caption ?? `Outfit by ${name}`}
@@ -50,7 +51,7 @@ export default function PostCard({ post }: { post: Post }) {
             1/{extraImages}
           </span>
         )}
-      </div>
+      </Link>
 
       {/* Actions */}
       <div className="flex items-center gap-4 px-4 pt-3">
@@ -59,7 +60,11 @@ export default function PostCard({ post }: { post: Post }) {
           initialLiked={post.is_liked ?? false}
           initialCount={post.likes_count}
         />
-        <span className="flex items-center gap-1.5 text-sm text-neutral-600">
+        <Link
+          href={`/post/${post.id}`}
+          aria-label="View comments"
+          className="flex items-center gap-1.5 text-sm text-neutral-600"
+        >
           <svg className="h-6 w-6 fill-none stroke-current" viewBox="0 0 24 24" strokeWidth={1.8}>
             <path
               strokeLinecap="round"
@@ -68,7 +73,7 @@ export default function PostCard({ post }: { post: Post }) {
             />
           </svg>
           <span className="tabular-nums">{post.comments_count > 0 ? post.comments_count : ''}</span>
-        </span>
+        </Link>
         <div className="ml-auto">
           <SaveButton postId={post.id} initialSaved={post.is_saved ?? false} />
         </div>
