@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import Navigation from '@/components/Navigation'
+import AppShell from '@/components/AppShell'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -20,9 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-white text-neutral-900 antialiased">
-        <Navigation />
-        {/* Bottom padding clears the mobile tab bar; left margin clears the desktop sidebar */}
-        <main className="pb-20 md:ml-56 md:pb-0">{children}</main>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   )
