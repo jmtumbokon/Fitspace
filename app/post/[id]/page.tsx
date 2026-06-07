@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { deleteComment } from '@/app/actions/comments'
 import LikeButton from '@/components/LikeButton'
+import ReportAction from '@/components/ReportAction'
 import SaveButton from '@/components/SaveButton'
 import { createClient } from '@/lib/supabase/server'
 import { formatPrice, timeAgo } from '@/lib/utils'
@@ -176,6 +177,7 @@ export default async function PostDetailPage({ params }: Props) {
             ))}
           </div>
         )}
+        {post.user_id !== user.id && <ReportAction postId={post.id} />}
       </div>
 
       {/* Shop the look */}
@@ -271,6 +273,11 @@ export default async function PostDetailPage({ params }: Props) {
                     </form>
                   )}
                 </div>
+                {comment.user_id !== user.id && (
+                  <div className="mt-0.5">
+                    <ReportAction commentId={comment.id} postId={post.id} compact />
+                  </div>
+                )}
               </div>
             </div>
           ))}
