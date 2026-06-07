@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 type NavItem = {
   href: string
@@ -49,6 +51,15 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    href: '/notifications',
+    label: 'Alerts',
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+      </svg>
+    ),
+  },
+  {
     href: '/profile',
     label: 'Profile',
     icon: (
@@ -63,11 +74,24 @@ function NavLink({
   item,
   active,
   variant,
+  badge = 0,
 }: {
   item: (typeof NAV_ITEMS)[number]
   active: boolean
   variant: 'tab' | 'sidebar'
+  badge?: number
 }) {
+  const icon = (
+    <span className="relative">
+      {item.icon}
+      {badge > 0 && (
+        <span className="absolute -right-[7px] -top-[3px] flex h-[15px] min-w-[15px] items-center justify-center rounded-full bg-rust px-[3px] text-[9px] font-bold leading-none text-white">
+          {badge > 9 ? '9+' : badge}
+        </span>
+      )}
+    </span>
+  )
+
   if (variant === 'tab') {
     return (
       <Link
@@ -76,7 +100,7 @@ function NavLink({
           active ? 'text-black font-semibold' : 'text-neutral-400'
         }`}
       >
-        {item.icon}
+        {icon}
         <span>{item.label}</span>
       </Link>
     )
@@ -91,7 +115,7 @@ function NavLink({
           : 'text-neutral-500 hover:bg-neutral-50 hover:text-black'
       }`}
     >
-      {item.icon}
+      {icon}
       <span>{item.label}</span>
     </Link>
   )
@@ -104,12 +128,38 @@ export default function Navigation() {
       (href) => pathname === href || pathname.startsWith(`${href}/`)
     )
 
+  // Unread notifications badge — re-counted on every route change; RLS
+  // scopes the count to the signed-in user.
+  const [unread, setUnread] = useState(0)
+  useEffect(() => {
+    let cancelled = false
+    createClient()
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('read', false)
+      .then(({ count }) => {
+        if (!cancelled) setUnread(count ?? 0)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [pathname])
+  // The notifications page marks everything read on view
+  const badgeFor = (item: NavItem) =>
+    item.href === '/notifications' && !pathname.startsWith('/notifications') ? unread : 0
+
   return (
     <>
       {/* Mobile: bottom tab bar */}
       <nav className="fixed inset-x-0 bottom-0 z-50 flex border-t border-neutral-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
         {NAV_ITEMS.map((item) => (
-          <NavLink key={item.href} item={item} active={isActive(item)} variant="tab" />
+          <NavLink
+            key={item.href}
+            item={item}
+            active={isActive(item)}
+            variant="tab"
+            badge={badgeFor(item)}
+          />
         ))}
       </nav>
 
@@ -120,7 +170,13 @@ export default function Navigation() {
         </Link>
         <div className="flex flex-col gap-1">
           {NAV_ITEMS.map((item) => (
-            <NavLink key={item.href} item={item} active={isActive(item)} variant="sidebar" />
+            <NavLink
+              key={item.href}
+              item={item}
+              active={isActive(item)}
+              variant="sidebar"
+              badge={badgeFor(item)}
+            />
           ))}
         </div>
       </aside>
