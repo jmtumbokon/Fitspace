@@ -19,8 +19,8 @@ export async function submitReport(input: {
   if (!reason) return { error: 'Add a short reason first.', already: false }
   if (!input.postId && !input.commentId) return { error: 'Nothing to report.', already: false }
 
-  // The table has no unique constraint on (reporter, target), so check the
-  // reporter's own prior reports for a friendly already-reported notice.
+  // Check the reporter's own prior reports for a friendly already-reported
+  // notice without round-tripping an insert failure.
   let dupCheck = supabase
     .from('reports')
     .select('id')
@@ -40,7 +40,12 @@ export async function submitReport(input: {
     comment_id: input.commentId ?? null,
     reason,
   })
-  if (error) return { error: error.message, already: false }
+  if (error) {
+    // Unique partial indexes backstop the check above — a concurrent
+    // double-submit lands here and still reads as "already reported"
+    if (error.code === '23505') return { error: null, already: true }
+    return { error: error.message, already: false }
+  }
 
   return { error: null, already: false }
 }

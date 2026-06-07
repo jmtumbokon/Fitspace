@@ -312,6 +312,12 @@ create table public.reports (
   created_at timestamptz default now(),
   check (post_id is not null or comment_id is not null)
 );
+-- One report per user per target (comment reports also carry post_id as
+-- context, so post-report uniqueness applies only to rows without one)
+create unique index reports_unique_post_report on public.reports (reporter_id, post_id)
+  where comment_id is null;
+create unique index reports_unique_comment_report on public.reports (reporter_id, comment_id)
+  where comment_id is not null;
 alter table public.reports enable row level security;
 create policy "Users can file reports" on reports for insert with check (auth.uid() = reporter_id);
 create policy "Users can see their own reports" on reports for select using (auth.uid() = reporter_id);
