@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import MobileHeader from '@/components/MobileHeader'
 import RatingBadge from '@/components/RatingBadge'
 import { timeLeftLabel, todayISO, type ChallengeRow } from '@/lib/challenges'
 import { createClient } from '@/lib/supabase/server'
@@ -62,10 +63,7 @@ export default async function ChallengeDetailPage({
 
   return (
     <div className="mx-auto max-w-[1240px] px-5 pb-20 md:px-10">
-      {/* Mobile-only wordmark header; desktop has the sidebar brand */}
-      <header className="sticky top-0 z-40 -mx-5 border-b border-line bg-bg/85 px-5 py-3 backdrop-blur-[14px] md:hidden">
-        <h1 className="font-serif text-[23px] font-medium tracking-[-0.4px]">FitSpace</h1>
-      </header>
+      <MobileHeader />
 
       {/* Challenge brief */}
       <div className="mb-7 border-b border-line pb-5 pt-7">

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import MobileHeader from '@/components/MobileHeader'
 import StatCard from '@/components/StatCard'
 import { createClient } from '@/lib/supabase/server'
 import { formatPrice } from '@/lib/utils'
@@ -41,10 +42,7 @@ export default async function WardrobePage() {
 
   return (
     <div className="mx-auto max-w-[1240px] px-5 pb-20 md:px-10">
-      {/* Mobile-only wordmark header; desktop has the sidebar brand */}
-      <header className="sticky top-0 z-40 -mx-5 border-b border-line bg-bg/85 px-5 py-3 backdrop-blur-[14px] md:hidden">
-        <h1 className="font-serif text-[23px] font-medium tracking-[-0.4px]">FitSpace</h1>
-      </header>
+      <MobileHeader />
 
       {/* View head */}
       <div className="mb-7 border-b border-line pb-4 pt-7">
