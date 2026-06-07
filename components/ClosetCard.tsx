@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import RatingBadge from '@/components/RatingBadge'
 import { swatchFor } from '@/lib/swatch'
 
 // One person's closet module — THE feed unit (mockup .closet).
@@ -12,6 +13,8 @@ export type ClosetGarment = {
   id: string
   imageUrl: string | null
   label: string
+  ratingAvg: number | null
+  ratingCount: number
 }
 
 export type ClosetPiece = ClosetGarment & {
@@ -125,6 +128,7 @@ export default function ClosetCard({
                   />
                 )}
                 <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,.18),transparent_50%)]" />
+                <RatingBadge avg={garment.ratingAvg} count={garment.ratingCount} />
               </div>
             </div>
           ))}

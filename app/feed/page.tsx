@@ -19,6 +19,8 @@ type FeedPostRow = {
   caption: string | null
   style_tags: string[]
   event_tags: string[]
+  rating_avg: number | null
+  rating_count: number
   created_at: string
   profile: {
     id: string
@@ -41,7 +43,7 @@ export default async function FeedPage() {
   const { data, error } = await supabase
     .from('posts')
     .select(
-      'id, user_id, image_url, caption, style_tags, event_tags, created_at, profile:profiles!posts_user_id_fkey(id, username, display_name, avatar_url, style_personas, posts_count, followers_count)'
+      'id, user_id, image_url, caption, style_tags, event_tags, rating_avg, rating_count, created_at, profile:profiles!posts_user_id_fkey(id, username, display_name, avatar_url, style_personas, posts_count, followers_count)'
     )
     .order('created_at', { ascending: false })
     .limit(POST_POOL)
@@ -81,6 +83,8 @@ export default async function FeedPage() {
         id: row.id,
         imageUrl: row.image_url,
         label: row.caption ?? 'fit',
+        ratingAvg: row.rating_avg,
+        ratingCount: row.rating_count,
       })
     }
     if (closet.pieces.length < PIECES_PER_PEEK) {
@@ -89,6 +93,8 @@ export default async function FeedPage() {
         imageUrl: row.image_url,
         label: row.caption?.slice(0, 40) ?? row.style_tags[0] ?? 'a fit',
         sub: timeAgo(row.created_at),
+        ratingAvg: row.rating_avg,
+        ratingCount: row.rating_count,
       })
     }
   }

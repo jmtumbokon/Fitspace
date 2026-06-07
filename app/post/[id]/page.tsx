@@ -8,8 +8,10 @@ import SaveButton from '@/components/SaveButton'
 import { createClient } from '@/lib/supabase/server'
 import { formatPrice, timeAgo } from '@/lib/utils'
 import type { Comment, Post } from '@/types'
+import type { RatingScores } from '@/app/actions/ratings'
 import CommentForm from './CommentForm'
 import ImageGallery from './ImageGallery'
+import RatingPanel from './RatingPanel'
 
 type Props = { params: { id: string } }
 
@@ -74,6 +76,38 @@ export default async function PostDetailPage({ params }: Props) {
   const commentList = (comments ?? []) as unknown as Comment[]
   const isLiked = (likeCount ?? 0) > 0
   const isSaved = Boolean(savedRow)
+
+  // Fit ratings — only when the poster opted in. rating_avg/rating_count on
+  // the post are trigger-maintained; creativity/wearability averages are
+  // computed here from the underlying rows.
+  let myRating: RatingScores | null = null
+  let ratingAverages: RatingScores | null = null
+  if (post.ratings_enabled) {
+    const [{ data: ratingRows }, { data: mine }] = await Promise.all([
+      supabase
+        .from('ratings')
+        .select('creativity, wearability, overall')
+        .eq('post_id', post.id)
+        .limit(500),
+      supabase
+        .from('ratings')
+        .select('creativity, wearability, overall')
+        .match({ post_id: post.id, user_id: user.id })
+        .maybeSingle(),
+    ])
+    myRating = (mine as RatingScores | null) ?? null
+    const rows = (ratingRows ?? []) as RatingScores[]
+    if (rows.length > 0) {
+      const avg = (key: keyof RatingScores) =>
+        rows.reduce((sum, row) => sum + row[key], 0) / rows.length
+      ratingAverages = {
+        creativity: avg('creativity'),
+        wearability: avg('wearability'),
+        // prefer the trigger-maintained exact average for overall
+        overall: post.rating_avg != null ? Number(post.rating_avg) : avg('overall'),
+      }
+    }
+  }
 
   return (
     <div className="mx-auto max-w-2xl md:py-8">
@@ -181,6 +215,19 @@ export default async function PostDetailPage({ params }: Props) {
               )
             })}
           </ul>
+        </section>
+      )}
+
+      {/* Fit ratings */}
+      {post.ratings_enabled && (
+        <section className="mt-6 px-4">
+          <RatingPanel
+            postId={post.id}
+            isOwner={post.user_id === user.id}
+            initial={myRating}
+            averages={ratingAverages}
+            count={post.rating_count}
+          />
         </section>
       )}
 

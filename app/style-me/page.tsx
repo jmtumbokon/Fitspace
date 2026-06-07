@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import RatingBadge from '@/components/RatingBadge'
 import { createClient } from '@/lib/supabase/server'
 import { swatchFor } from '@/lib/swatch'
 import { formatPrice } from '@/lib/utils'
@@ -43,6 +44,8 @@ type ResultRow = {
   event_tags: string[]
   total_outfit_cost: number | null
   likes_count: number
+  rating_avg: number | null
+  rating_count: number
   created_at: string
   outfit_items: OutfitItemRow[]
   profile: { username: string; display_name: string | null } | null
@@ -132,7 +135,7 @@ export default async function StyleMePage({
         const { data: results, error } = await supabase
           .from('posts')
           .select(
-            'id, image_url, caption, style_tags, event_tags, total_outfit_cost, likes_count, created_at, outfit_items(id, label, brand, item_name), profile:profiles!posts_user_id_fkey(username, display_name)'
+            'id, image_url, caption, style_tags, event_tags, total_outfit_cost, likes_count, rating_avg, rating_count, created_at, outfit_items(id, label, brand, item_name), profile:profiles!posts_user_id_fkey(username, display_name)'
           )
           .in('id', postIds)
 
@@ -236,6 +239,7 @@ export default async function StyleMePage({
                         />
                       )}
                       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,.2),transparent_55%)]" />
+                      <RatingBadge avg={post.rating_avg} count={post.rating_count} />
                     </div>
                   </Link>
                   <div className="px-[11px] py-[10px]">

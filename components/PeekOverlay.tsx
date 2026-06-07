@@ -6,6 +6,7 @@ import { useEffect, useState, useTransition } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { followUser, unfollowUser } from '@/app/actions/interactions'
 import { closetInitials, type Closet } from '@/components/ClosetCard'
+import RatingBadge from '@/components/RatingBadge'
 import { swatchFor } from '@/lib/swatch'
 
 // Slide-up peek modal (mockup .scrim / .peekcard): owner header,
@@ -157,6 +158,7 @@ export default function PeekOverlay({
                         />
                       )}
                       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,rgba(255,255,255,.2),transparent_55%)]" />
+                      <RatingBadge avg={piece.ratingAvg} count={piece.ratingCount} />
                     </div>
                     <div className="px-2 py-[7px] text-[11px] font-semibold leading-[1.2]">
                       <span className="block truncate">{piece.label}</span>
