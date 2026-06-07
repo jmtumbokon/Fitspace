@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Chip from '@/components/Chip'
@@ -106,6 +107,17 @@ export default function ExploreControls({
           Filters{activeFilters > 0 && ` · ${activeFilters}`}
         </button>
       </form>
+
+      {/* Hand-off into /style-me's free-text mode, carrying any typed query */}
+      <p className="mt-3 text-[12.5px] text-ink-soft">
+        Styling a piece you own?{' '}
+        <Link
+          href={q.trim() ? `/style-me?q=${encodeURIComponent(q.trim())}` : '/style-me'}
+          className="font-semibold text-rust transition-colors duration-[220ms] hover:text-ink"
+        >
+          Ask what goes with it →
+        </Link>
+      </p>
 
       {/* Trending events */}
       {trending.length > 0 && (

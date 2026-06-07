@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { swatchFor } from '@/lib/swatch'
 import { formatPrice } from '@/lib/utils'
 import type { WardrobeItem } from '@/types'
@@ -40,12 +41,21 @@ export default function WardrobeItemCard({ item }: { item: WardrobeItem }) {
             </b>
           </div>
         ) : (
-          <div className="flex justify-between text-[11px] text-ink-soft">
-            <span>cost/wear</span>
-            <b className="font-bold text-rust">
-              {cpw != null ? formatPrice(cpw) : `worn ${item.times_worn}×`}
-            </b>
-          </div>
+          <>
+            <div className="flex justify-between text-[11px] text-ink-soft">
+              <span>cost/wear</span>
+              <b className="font-bold text-rust">
+                {cpw != null ? formatPrice(cpw) : `worn ${item.times_worn}×`}
+              </b>
+            </div>
+            {/* Jump into /style-me's wardrobe-picker mode with this piece */}
+            <Link
+              href={`/style-me?item=${item.id}`}
+              className="mt-[7px] block truncate border-t border-line-soft pt-[7px] text-[10.5px] font-semibold text-rust transition-colors duration-[220ms] hover:text-ink"
+            >
+              what goes with this? →
+            </Link>
+          </>
         )}
       </div>
     </div>

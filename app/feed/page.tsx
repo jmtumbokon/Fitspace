@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import SectionTabs, { FEED_SECTION_TABS } from '@/components/SectionTabs'
 import { createClient } from '@/lib/supabase/server'
 import { timeAgo } from '@/lib/utils'
 import type { Closet } from '@/components/ClosetCard'
@@ -124,6 +125,7 @@ export default async function FeedPage() {
         <p className="mt-[3px] text-[13.5px] text-ink-soft">
           One big shared closet · peek into anyone&apos;s
         </p>
+        <SectionTabs tabs={FEED_SECTION_TABS} active="/feed" />
       </div>
 
       {closets.length === 0 ? (

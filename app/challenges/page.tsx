@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import SectionTabs, { FEED_SECTION_TABS } from '@/components/SectionTabs'
 import {
   activeChallengesQuery,
   timeLeftLabel,
@@ -34,6 +35,7 @@ export default async function ChallengesPage() {
         <p className="mt-[3px] text-[13.5px] text-ink-soft">
           A theme, a deadline · hang your take on the rail
         </p>
+        <SectionTabs tabs={FEED_SECTION_TABS} active="/challenges" />
       </div>
 
       {error ? (
