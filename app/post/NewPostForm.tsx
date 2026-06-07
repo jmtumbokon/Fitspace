@@ -19,12 +19,22 @@ type ItemRow = { brand: string; item_name: string; price: string; purchase_url: 
 
 const emptyItem: ItemRow = { brand: '', item_name: '', price: '', purchase_url: '' }
 
-export default function NewPostForm({ userId }: { userId: string }) {
+export type ActiveChallenge = { tag: string; title: string }
+
+export default function NewPostForm({
+  userId,
+  challenges,
+}: {
+  userId: string
+  challenges: ActiveChallenge[]
+}) {
   const [files, setFiles] = useState<File[]>([])
   const [caption, setCaption] = useState('')
   const [styleTags, setStyleTags] = useState<string[]>([])
   const [eventTags, setEventTags] = useState('')
   const [season, setSeason] = useState('')
+  // A post carries a single challenge_tag — picking another replaces it
+  const [challengeTag, setChallengeTag] = useState<string | null>(null)
   const [ratingsEnabled, setRatingsEnabled] = useState(false)
   const [items, setItems] = useState<ItemRow[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -107,6 +117,7 @@ export default function NewPostForm({ userId }: { userId: string }) {
             .map((tag) => tag.trim().toLowerCase())
             .filter(Boolean),
           season: season || null,
+          challengeTag,
           ratingsEnabled,
           items: parsedItems,
         })
@@ -243,6 +254,41 @@ export default function NewPostForm({ userId }: { userId: string }) {
           </select>
         </div>
       </div>
+
+      {/* Challenges */}
+      {challenges.length > 0 && (
+        <fieldset>
+          <legend className="mb-2 text-sm font-medium">
+            Challenges{' '}
+            <span className="font-normal text-neutral-400">(optional — one per post)</span>
+          </legend>
+          <div className="flex flex-wrap gap-2">
+            {challenges.map((challenge) => {
+              const selected = challengeTag === challenge.tag
+              return (
+                <button
+                  key={challenge.tag}
+                  type="button"
+                  onClick={() => setChallengeTag(selected ? null : challenge.tag)}
+                  aria-pressed={selected}
+                  className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                    selected
+                      ? 'border-black bg-black text-white'
+                      : 'border-neutral-300 text-neutral-600 hover:border-neutral-500'
+                  }`}
+                >
+                  {challenge.title}
+                </button>
+              )
+            })}
+          </div>
+          {challengeTag && (
+            <p className="mt-1 text-xs text-neutral-400">
+              Tagged #{challengeTag} — this fit enters the challenge.
+            </p>
+          )}
+        </fieldset>
+      )}
 
       {/* Outfit items */}
       <div>

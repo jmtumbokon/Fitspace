@@ -21,6 +21,7 @@ export type NewPostInput = {
   styleTags: string[]
   eventTags: string[]
   season: string | null
+  challengeTag: string | null
   ratingsEnabled: boolean
   items: NewOutfitItem[]
 }
@@ -46,6 +47,18 @@ export async function publishPost(input: NewPostInput): Promise<{ error: string 
   const season = input.season && (SEASONS as string[]).includes(input.season) ? input.season : null
   const caption = input.caption.trim().slice(0, 2200) || null
 
+  // Only accept a challenge_tag that actually exists — the submission_count
+  // trigger keys off it, and a stray tag would silently enter nothing
+  let challengeTag: string | null = null
+  if (input.challengeTag) {
+    const { data: challenge } = await supabase
+      .from('challenges')
+      .select('tag')
+      .eq('tag', input.challengeTag)
+      .maybeSingle()
+    challengeTag = challenge?.tag ?? null
+  }
+
   // Drop empty item rows; keep anything with at least a brand or name
   const items = input.items.filter((item) => item.brand.trim() || item.item_name.trim())
   const totalCost = items.reduce((sum, item) => sum + (item.price ?? 0), 0)
@@ -60,6 +73,7 @@ export async function publishPost(input: NewPostInput): Promise<{ error: string 
       style_tags: input.styleTags.slice(0, 10),
       event_tags: input.eventTags.slice(0, 10),
       season,
+      challenge_tag: challengeTag,
       ratings_enabled: input.ratingsEnabled,
       total_outfit_cost: totalCost > 0 ? totalCost : null,
     })

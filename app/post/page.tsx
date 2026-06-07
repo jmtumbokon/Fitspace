@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { activeChallengesQuery, todayISO, type ChallengeRow } from '@/lib/challenges'
 import { createClient } from '@/lib/supabase/server'
 import NewPostForm from './NewPostForm'
 
@@ -9,6 +10,13 @@ export default async function PostPage() {
     redirect('/login')
   }
 
+  // Active challenges the poster can enter this fit into
+  const { data: challengeRows } = await activeChallengesQuery(supabase, todayISO())
+  const challenges = ((challengeRows ?? []) as ChallengeRow[]).map((challenge) => ({
+    tag: challenge.tag,
+    title: challenge.title,
+  }))
+
   return (
     <div className="mx-auto max-w-lg px-4 py-8">
       <h1 className="text-2xl font-bold">Share a fit</h1>
@@ -16,7 +24,7 @@ export default async function PostPage() {
         Post your outfit, tag the pieces, and let people shop the look.
       </p>
       <div className="mt-6">
-        <NewPostForm userId={user.id} />
+        <NewPostForm userId={user.id} challenges={challenges} />
       </div>
     </div>
   )
