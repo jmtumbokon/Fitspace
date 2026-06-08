@@ -120,25 +120,30 @@ export default async function PostDetailPage({ params }: Props) {
 
       {/* Author header */}
       <div className="flex items-center gap-3 px-4 py-3">
-        {profile?.avatar_url ? (
-          <Image
-            src={profile.avatar_url}
-            alt={name}
-            width={36}
-            height={36}
-            className="h-9 w-9 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-bg2 text-sm font-bold uppercase text-ink-soft">
-            {(profile?.username ?? '?')[0]}
-          </div>
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-ink">{name}</p>
-          {profile?.username && profile.display_name && (
-            <p className="truncate text-xs text-ink-soft">@{profile.username}</p>
+        <Link
+          href={profile?.username ? `/u/${profile.username}` : '#'}
+          className="flex min-w-0 flex-1 items-center gap-3"
+        >
+          {profile?.avatar_url ? (
+            <Image
+              src={profile.avatar_url}
+              alt={name}
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-full object-cover"
+            />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-bg2 text-sm font-bold uppercase text-ink-soft">
+              {(profile?.username ?? '?')[0]}
+            </div>
           )}
-        </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-ink">{name}</p>
+            {profile?.username && profile.display_name && (
+              <p className="truncate text-xs text-ink-soft">@{profile.username}</p>
+            )}
+          </div>
+        </Link>
         <span className="text-xs text-ink-soft">{timeAgo(post.created_at)}</span>
       </div>
 
