@@ -129,25 +129,25 @@ export default async function PostDetailPage({ params }: Props) {
             className="h-9 w-9 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-200 text-sm font-semibold uppercase text-neutral-600">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-bg2 text-sm font-bold uppercase text-ink-soft">
             {(profile?.username ?? '?')[0]}
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{name}</p>
+          <p className="truncate text-sm font-semibold text-ink">{name}</p>
           {profile?.username && profile.display_name && (
-            <p className="truncate text-xs text-neutral-400">@{profile.username}</p>
+            <p className="truncate text-xs text-ink-soft">@{profile.username}</p>
           )}
         </div>
-        <span className="text-xs text-neutral-400">{timeAgo(post.created_at)}</span>
+        <span className="text-xs text-ink-soft">{timeAgo(post.created_at)}</span>
       </div>
 
       <ImageGallery urls={images} alt={post.caption ?? `Outfit by ${name}`} />
 
       {/* Actions */}
-      <div className="flex items-center gap-4 px-4 pt-3">
+      <div className="flex items-center gap-4 px-4 pt-3 text-ink">
         <LikeButton postId={post.id} initialLiked={isLiked} initialCount={post.likes_count} />
-        <span className="flex items-center gap-1.5 text-sm text-neutral-600">
+        <span className="flex items-center gap-1.5 text-sm text-ink-soft">
           <svg className="h-6 w-6 fill-none stroke-current" viewBox="0 0 24 24" strokeWidth={1.8}>
             <path
               strokeLinecap="round"
@@ -165,19 +165,19 @@ export default async function PostDetailPage({ params }: Props) {
       {/* Caption + tags */}
       <div className="flex flex-col gap-2 px-4 pt-2">
         {post.caption && (
-          <p className="text-sm">
-            <span className="font-semibold">{profile?.username}</span> {post.caption}
+          <p className="text-sm text-ink">
+            <span className="font-semibold text-sage">{profile?.username}</span> {post.caption}
           </p>
         )}
         {(tags.length > 0 || post.season) && (
           <div className="flex flex-wrap items-center gap-1.5">
             {post.season && (
-              <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700">
+              <span className="rounded-pill bg-sage/10 px-2.5 py-0.5 text-xs font-medium text-sage">
                 {post.season}
               </span>
             )}
             {tags.map((tag) => (
-              <span key={tag} className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs text-neutral-600">
+              <span key={tag} className="rounded-pill bg-bg2 px-2.5 py-0.5 text-xs text-ink-soft">
                 {tag}
               </span>
             ))}
@@ -190,23 +190,25 @@ export default async function PostDetailPage({ params }: Props) {
       {items.length > 0 && (
         <section className="mt-6 px-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Shop the look</h2>
+            <h2 className="text-[11px] font-semibold uppercase tracking-[2px] text-rust">
+              Shop the look
+            </h2>
             {post.total_outfit_cost != null && (
-              <span className="text-xs font-medium text-green-700">
+              <span className="text-xs font-semibold text-rust">
                 {formatPrice(post.total_outfit_cost)} total
               </span>
             )}
           </div>
-          <ul className="mt-2 divide-y divide-neutral-100 rounded-lg border border-neutral-200">
+          <ul className="mt-2 divide-y divide-line-soft rounded-card border border-line bg-panel">
             {items.map((item) => {
               const itemName = [item.brand, item.item_name].filter(Boolean).join(' — ') || item.label || 'Item'
               const link = item.affiliate_url ?? item.purchase_url
               return (
                 <li key={item.id} className="flex items-center gap-3 px-3 py-2.5">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm">{itemName}</p>
+                    <p className="truncate text-sm text-ink">{itemName}</p>
                     {item.price != null && (
-                      <p className="text-xs text-neutral-500">{formatPrice(item.price, item.currency)}</p>
+                      <p className="text-xs text-ink-soft">{formatPrice(item.price, item.currency)}</p>
                     )}
                   </div>
                   {link && (
@@ -214,7 +216,7 @@ export default async function PostDetailPage({ params }: Props) {
                       href={link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="shrink-0 rounded-lg border border-neutral-300 px-3 py-1 text-xs font-medium hover:border-neutral-500"
+                      className="shrink-0 rounded-pill border border-line px-3 py-1 text-xs font-semibold text-ink transition-colors duration-[220ms] hover:border-ink hover:bg-ink hover:text-bg"
                     >
                       Shop
                     </a>
@@ -241,13 +243,13 @@ export default async function PostDetailPage({ params }: Props) {
 
       {/* Comments */}
       <section className="mt-6 px-4 pb-8">
-        <h2 className="text-sm font-semibold">
-          Comments{commentList.length > 0 && ` (${commentList.length})`}
+        <h2 className="text-[11px] font-semibold uppercase tracking-[2px] text-rust">
+          Comments{commentList.length > 0 && ` · ${commentList.length}`}
         </h2>
 
         <div className="mt-3 flex flex-col gap-4">
           {commentList.length === 0 && (
-            <p className="text-sm text-neutral-400">No comments yet. Say something nice.</p>
+            <p className="text-sm text-ink-soft">No comments yet. Say something nice.</p>
           )}
           {commentList.map((comment) => (
             <div key={comment.id} className="flex items-start gap-3">
@@ -260,20 +262,20 @@ export default async function PostDetailPage({ params }: Props) {
                   className="h-7 w-7 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xs font-semibold uppercase text-neutral-600">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bg2 text-xs font-bold uppercase text-ink-soft">
                   {(comment.profile?.username ?? '?')[0]}
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-sm">
-                  <span className="font-semibold">{comment.profile?.username ?? 'unknown'}</span>{' '}
+                <p className="text-sm text-ink">
+                  <span className="font-semibold text-sage">{comment.profile?.username ?? 'unknown'}</span>{' '}
                   {comment.body}
                 </p>
-                <div className="mt-0.5 flex items-center gap-3 text-xs text-neutral-400">
+                <div className="mt-0.5 flex items-center gap-3 text-xs text-ink-soft">
                   <span>{timeAgo(comment.created_at)}</span>
                   {comment.user_id === user.id && (
                     <form action={deleteComment.bind(null, comment.id, post.id)}>
-                      <button type="submit" className="hover:text-red-500 hover:underline">
+                      <button type="submit" className="hover:text-rust hover:underline">
                         Delete
                       </button>
                     </form>
@@ -295,7 +297,7 @@ export default async function PostDetailPage({ params }: Props) {
       </section>
 
       <div className="px-4 pb-8 md:hidden">
-        <Link href="/feed" className="text-sm text-neutral-500 hover:underline">
+        <Link href="/feed" className="text-sm text-ink-soft transition-colors hover:text-rust">
           ← Back to feed
         </Link>
       </div>

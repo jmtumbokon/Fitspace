@@ -12,7 +12,7 @@ function PostButton() {
     <button
       type="submit"
       disabled={pending}
-      className="shrink-0 text-sm font-semibold text-black disabled:opacity-50"
+      className="shrink-0 text-sm font-semibold text-rust disabled:opacity-50"
     >
       {pending ? 'Posting…' : 'Post'}
     </button>
@@ -35,7 +35,7 @@ export default function CommentForm({ postId }: { postId: string }) {
 
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-2">
-      <div className="flex items-center gap-3 rounded-lg border border-neutral-300 px-3 py-2 focus-within:border-black">
+      <div className="flex items-center gap-3 rounded-pill border border-line bg-panel px-4 py-2.5 focus-within:border-ink">
         <input type="hidden" name="post_id" value={postId} />
         <input
           name="body"
@@ -44,12 +44,12 @@ export default function CommentForm({ postId }: { postId: string }) {
           maxLength={1000}
           placeholder="Add a comment…"
           autoComplete="off"
-          className="w-full text-sm outline-none"
+          className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink-soft/60"
         />
         <PostButton />
       </div>
       {state.error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>
+        <p className="rounded-drawer bg-rust/10 px-3 py-2 text-sm text-rust">{state.error}</p>
       )}
     </form>
   )

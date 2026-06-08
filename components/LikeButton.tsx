@@ -39,7 +39,7 @@ export default function LikeButton({
       className="flex items-center gap-1.5 text-sm"
     >
       <svg
-        className={`h-6 w-6 transition-colors ${liked ? 'fill-red-500 stroke-red-500' : 'fill-none stroke-current'}`}
+        className={`h-6 w-6 transition-colors ${liked ? 'fill-rust stroke-rust' : 'fill-none stroke-current'}`}
         viewBox="0 0 24 24"
         strokeWidth={1.8}
       >

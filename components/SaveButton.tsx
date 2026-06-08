@@ -32,7 +32,7 @@ export default function SaveButton({
       aria-label={saved ? 'Unsave' : 'Save'}
     >
       <svg
-        className={`h-6 w-6 transition-colors ${saved ? 'fill-black stroke-black' : 'fill-none stroke-current'}`}
+        className={`h-6 w-6 transition-colors ${saved ? 'fill-ink stroke-ink' : 'fill-none stroke-current'}`}
         viewBox="0 0 24 24"
         strokeWidth={1.8}
       >
