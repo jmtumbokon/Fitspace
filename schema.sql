@@ -45,7 +45,7 @@ create table public.posts (
   event_tags text[] default '{}',
   style_tags text[] default '{}',
   aesthetic_tags text[] default '{}',
-  challenge_tag text,
+  challenge_tag text, -- legacy single-challenge tag; superseded by post_challenges
   season text,
   total_outfit_cost numeric(10,2),
   ratings_enabled boolean default false,
@@ -238,6 +238,26 @@ create table public.challenges (
 );
 alter table public.challenges enable row level security;
 create policy "Challenges are viewable by everyone" on challenges for select using (true);
+
+-- ─────────────────────────────────────────
+-- POST ↔ CHALLENGE (many-to-many: a post can join several challenges at once)
+-- Supersedes the single posts.challenge_tag column, which is kept as legacy.
+-- ─────────────────────────────────────────
+create table public.post_challenges (
+  post_id uuid references public.posts(id) on delete cascade not null,
+  challenge_id uuid references public.challenges(id) on delete cascade not null,
+  created_at timestamptz default now(),
+  primary key (post_id, challenge_id)
+);
+create index post_challenges_challenge_idx on public.post_challenges (challenge_id);
+alter table public.post_challenges enable row level security;
+create policy "Post challenges are viewable by everyone" on post_challenges for select using (true);
+create policy "Owners can add their post to challenges" on post_challenges for insert with check (
+  auth.uid() = (select user_id from posts where id = post_id)
+);
+create policy "Owners can remove their post from challenges" on post_challenges for delete using (
+  auth.uid() = (select user_id from posts where id = post_id)
+);
 
 -- ─────────────────────────────────────────
 -- STYLE BATTLES
@@ -438,19 +458,21 @@ begin
 end; $$;
 create trigger trg_battle_vote_ins after insert on battle_votes for each row execute function handle_battle_vote();
 
--- ---------- CHALLENGE SUBMISSION COUNT ----------
-create or replace function public.handle_challenge_submission() returns trigger
+-- ---------- CHALLENGE SUBMISSION COUNT (via post_challenges join) ----------
+-- Many-to-many: a post can belong to several challenges at once. Counts are
+-- maintained off the join table, not the legacy posts.challenge_tag column.
+create or replace function public.handle_post_challenge() returns trigger
 language plpgsql security definer set search_path = public as $$
 begin
-  if (tg_op = 'INSERT' and new.challenge_tag is not null) then
-    update challenges set submission_count = submission_count + 1 where tag = new.challenge_tag;
-  elsif (tg_op = 'DELETE' and old.challenge_tag is not null) then
-    update challenges set submission_count = greatest(submission_count - 1, 0) where tag = old.challenge_tag;
+  if (tg_op = 'INSERT') then
+    update challenges set submission_count = submission_count + 1 where id = new.challenge_id;
+  elsif (tg_op = 'DELETE') then
+    update challenges set submission_count = greatest(submission_count - 1, 0) where id = old.challenge_id;
   end if;
   return null;
 end; $$;
-create trigger trg_challenge_sub_ins after insert on posts for each row execute function handle_challenge_submission();
-create trigger trg_challenge_sub_del after delete on posts for each row execute function handle_challenge_submission();
+create trigger trg_post_challenge_ins after insert on post_challenges for each row execute function handle_post_challenge();
+create trigger trg_post_challenge_del after delete on post_challenges for each row execute function handle_post_challenge();
 
 -- ---------- AUTO-CREATE PROFILE ON SIGNUP ----------
 -- Creates a profiles row automatically when a new auth user is created.

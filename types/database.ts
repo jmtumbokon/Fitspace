@@ -509,6 +509,39 @@ export interface Database {
         }
         Relationships: []
       }
+      post_challenges: {
+        Row: {
+          post_id: string
+          challenge_id: string
+          created_at: string
+        }
+        Insert: {
+          post_id: string
+          challenge_id: string
+          created_at?: string
+        }
+        Update: {
+          post_id?: string
+          challenge_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'post_challenges_post_id_fkey'
+            columns: ['post_id']
+            isOneToOne: false
+            referencedRelation: 'posts'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'post_challenges_challenge_id_fkey'
+            columns: ['challenge_id']
+            isOneToOne: false
+            referencedRelation: 'challenges'
+            referencedColumns: ['id']
+          }
+        ]
+      }
       style_battles: {
         Row: {
           id: string

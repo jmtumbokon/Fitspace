@@ -36,8 +36,8 @@ export default function NewPostForm({
   const [styleTags, setStyleTags] = useState<string[]>([])
   const [eventTags, setEventTags] = useState('')
   const [season, setSeason] = useState('')
-  // A post carries a single challenge_tag — picking another replaces it
-  const [challengeTag, setChallengeTag] = useState<string | null>(null)
+  // A post can join several challenges at once
+  const [challengeTags, setChallengeTags] = useState<string[]>([])
   const [ratingsEnabled, setRatingsEnabled] = useState(false)
   const [items, setItems] = useState<ItemRow[]>([])
   const [error, setError] = useState<string | null>(null)
@@ -120,7 +120,7 @@ export default function NewPostForm({
             .map((tag) => tag.trim().toLowerCase())
             .filter(Boolean),
           season: season || null,
-          challengeTag,
+          challengeTags,
           ratingsEnabled,
           items: parsedItems,
         })
@@ -249,25 +249,32 @@ export default function NewPostForm({
       {challenges.length > 0 && (
         <fieldset>
           <legend className="mb-2 text-[13.5px] font-medium text-ink">
-            Challenges <span className={optionalClass}>(optional — one per post)</span>
+            Challenges <span className={optionalClass}>(optional — add to any that fit)</span>
           </legend>
           <div className="flex flex-wrap gap-2">
             {challenges.map((challenge) => {
-              const selected = challengeTag === challenge.tag
+              const selected = challengeTags.includes(challenge.tag)
               return (
                 <Chip
                   key={challenge.tag}
                   on={selected}
-                  onClick={() => setChallengeTag(selected ? null : challenge.tag)}
+                  onClick={() =>
+                    setChallengeTags((prev) =>
+                      prev.includes(challenge.tag)
+                        ? prev.filter((t) => t !== challenge.tag)
+                        : [...prev, challenge.tag]
+                    )
+                  }
                 >
                   {challenge.title}
                 </Chip>
               )
             })}
           </div>
-          {challengeTag && (
+          {challengeTags.length > 0 && (
             <p className="mt-2 text-xs text-ink-soft">
-              Tagged #{challengeTag} — this fit enters the challenge.
+              Entering {challengeTags.length} {challengeTags.length === 1 ? 'challenge' : 'challenges'}:{' '}
+              {challengeTags.map((t) => `#${t}`).join(' ')}
             </p>
           )}
         </fieldset>

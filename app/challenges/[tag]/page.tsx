@@ -50,16 +50,30 @@ export default async function ChallengeDetailPage({
   const today = todayISO()
   const ended = challenge.end_date != null && challenge.end_date < today
 
-  const { data: postRows, error } = await supabase
-    .from('posts')
-    .select(
-      'id, image_url, caption, style_tags, event_tags, total_outfit_cost, likes_count, rating_avg, rating_count, profile:profiles!posts_user_id_fkey(username, display_name)'
-    )
-    .eq('challenge_tag', challenge.tag)
-    .order('likes_count', { ascending: false })
-    .limit(RESULTS_LIMIT)
+  // Submissions come through the post_challenges join table (a post can be in
+  // several challenges). Fetch this challenge's post ids, then the posts.
+  const { data: joinRows, error: joinError } = await supabase
+    .from('post_challenges')
+    .select('post_id')
+    .eq('challenge_id', challenge.id)
 
-  const posts = (postRows ?? []) as unknown as SubmissionRow[]
+  const postIds = (joinRows ?? []).map((row) => row.post_id)
+  let postRows: SubmissionRow[] = []
+  let error = joinError
+  if (!error && postIds.length > 0) {
+    const { data, error: postsError } = await supabase
+      .from('posts')
+      .select(
+        'id, image_url, caption, style_tags, event_tags, total_outfit_cost, likes_count, rating_avg, rating_count, profile:profiles!posts_user_id_fkey(username, display_name)'
+      )
+      .in('id', postIds)
+      .order('likes_count', { ascending: false })
+      .limit(RESULTS_LIMIT)
+    error = postsError
+    postRows = (data ?? []) as unknown as SubmissionRow[]
+  }
+
+  const posts = postRows
 
   return (
     <div className="mx-auto max-w-[1240px] px-5 pb-20 md:px-10">

@@ -21,7 +21,7 @@ export type NewPostInput = {
   styleTags: string[]
   eventTags: string[]
   season: string | null
-  challengeTag: string | null
+  challengeTags: string[]
   ratingsEnabled: boolean
   items: NewOutfitItem[]
 }
@@ -47,16 +47,15 @@ export async function publishPost(input: NewPostInput): Promise<{ error: string 
   const season = input.season && (SEASONS as string[]).includes(input.season) ? input.season : null
   const caption = input.caption.trim().slice(0, 2200) || null
 
-  // Only accept a challenge_tag that actually exists — the submission_count
-  // trigger keys off it, and a stray tag would silently enter nothing
-  let challengeTag: string | null = null
-  if (input.challengeTag) {
-    const { data: challenge } = await supabase
+  // Resolve selected challenge tags to ids — only real ones; the join table's
+  // trigger maintains submission_count. challenge_tag (legacy) is left null.
+  let challengeIds: string[] = []
+  if (input.challengeTags.length > 0) {
+    const { data: challenges } = await supabase
       .from('challenges')
-      .select('tag')
-      .eq('tag', input.challengeTag)
-      .maybeSingle()
-    challengeTag = challenge?.tag ?? null
+      .select('id')
+      .in('tag', input.challengeTags)
+    challengeIds = (challenges ?? []).map((c) => c.id)
   }
 
   // Drop empty item rows; keep anything with at least a brand or name
@@ -73,7 +72,6 @@ export async function publishPost(input: NewPostInput): Promise<{ error: string 
       style_tags: input.styleTags.slice(0, 10),
       event_tags: input.eventTags.slice(0, 10),
       season,
-      challenge_tag: challengeTag,
       ratings_enabled: input.ratingsEnabled,
       total_outfit_cost: totalCost > 0 ? totalCost : null,
     })
@@ -82,6 +80,16 @@ export async function publishPost(input: NewPostInput): Promise<{ error: string 
 
   if (postError || !post) {
     return { error: postError?.message ?? 'Failed to create post.' }
+  }
+
+  // Join the post into each selected challenge (drives submission_count)
+  if (challengeIds.length > 0) {
+    const { error: challengeError } = await supabase
+      .from('post_challenges')
+      .insert(challengeIds.map((challenge_id) => ({ post_id: post.id, challenge_id })))
+    if (challengeError) {
+      return { error: `Post created, but challenges failed to save: ${challengeError.message}` }
+    }
   }
 
   if (items.length > 0) {
