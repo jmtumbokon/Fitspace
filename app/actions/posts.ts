@@ -103,3 +103,71 @@ export async function publishPost(input: NewPostInput): Promise<{ error: string 
   revalidatePath('/feed')
   redirect('/feed')
 }
+
+export type EditPostInput = {
+  caption: string
+  styleTags: string[]
+  eventTags: string[]
+  season: string | null
+  ratingsEnabled: boolean
+}
+
+// Edit a post's text/metadata (not photos or outfit items). RLS restricts
+// the update to the owner; total_outfit_cost stays tied to outfit_items.
+export async function updatePost(
+  postId: string,
+  input: EditPostInput
+): Promise<{ error: string | null }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'Not authenticated.' }
+  }
+
+  const season = input.season && (SEASONS as string[]).includes(input.season) ? input.season : null
+  const caption = input.caption.trim().slice(0, 2200) || null
+
+  const { error } = await supabase
+    .from('posts')
+    .update({
+      caption,
+      style_tags: input.styleTags.slice(0, 10),
+      event_tags: input.eventTags.slice(0, 10),
+      season,
+      ratings_enabled: input.ratingsEnabled,
+    })
+    .eq('id', postId)
+    .eq('user_id', user.id) // belt-and-suspenders alongside RLS
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath(`/post/${postId}`)
+  revalidatePath('/feed')
+  return { error: null }
+}
+
+// Delete a post. RLS enforces ownership; outfit_items, likes, comments,
+// ratings, and notifications cascade on the FK.
+export async function deletePost(postId: string): Promise<{ error: string | null }> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { error: 'Not authenticated.' }
+  }
+
+  const { error } = await supabase
+    .from('posts')
+    .delete()
+    .eq('id', postId)
+    .eq('user_id', user.id)
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/feed')
+  revalidatePath('/profile')
+  redirect('/feed')
+}

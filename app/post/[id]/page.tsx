@@ -13,6 +13,7 @@ import type { Comment, Post } from '@/types'
 import type { RatingScores } from '@/app/actions/ratings'
 import CommentForm from './CommentForm'
 import ImageGallery from './ImageGallery'
+import OwnerPostControls from './OwnerPostControls'
 import RatingPanel from './RatingPanel'
 
 type Props = { params: { id: string } }
@@ -188,7 +189,20 @@ export default async function PostDetailPage({ params }: Props) {
             ))}
           </div>
         )}
-        {post.user_id !== user.id && <ReportAction postId={post.id} />}
+        {post.user_id === user.id ? (
+          <OwnerPostControls
+            postId={post.id}
+            initial={{
+              caption: post.caption ?? '',
+              styleTags: post.style_tags,
+              eventTags: post.event_tags,
+              season: post.season ?? '',
+              ratingsEnabled: post.ratings_enabled,
+            }}
+          />
+        ) : (
+          <ReportAction postId={post.id} />
+        )}
       </div>
 
       {/* Shop the look */}
