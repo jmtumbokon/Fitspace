@@ -6,12 +6,16 @@ import SubmitButton from '@/components/SubmitButton'
 
 const initialState: AuthState = { error: null }
 
+const inputClass =
+  'w-full rounded-drawer border border-line bg-panel px-3.5 py-2.5 text-sm text-ink outline-none transition-colors duration-[220ms] focus:border-ink placeholder:text-ink-soft/55'
+const labelClass = 'mb-1 block text-[13.5px] font-medium text-ink'
+
 export default function SignupForm() {
   const [state, formAction] = useFormState(signup, initialState)
 
   if (state.message) {
     return (
-      <p className="rounded-lg bg-green-50 px-3 py-3 text-center text-sm text-green-700">
+      <p className="rounded-drawer bg-sage/10 px-3 py-3 text-center text-sm text-sage">
         {state.message}
       </p>
     )
@@ -20,7 +24,7 @@ export default function SignupForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <div>
-        <label htmlFor="username" className="mb-1 block text-sm font-medium">
+        <label htmlFor="username" className={labelClass}>
           Username
         </label>
         <input
@@ -33,11 +37,11 @@ export default function SignupForm() {
           maxLength={20}
           pattern="[a-zA-Z0-9_]+"
           placeholder="lowercase letters, numbers, _"
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-black"
+          className={inputClass}
         />
       </div>
       <div>
-        <label htmlFor="email" className="mb-1 block text-sm font-medium">
+        <label htmlFor="email" className={labelClass}>
           Email
         </label>
         <input
@@ -46,11 +50,11 @@ export default function SignupForm() {
           type="email"
           autoComplete="email"
           required
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-black"
+          className={inputClass}
         />
       </div>
       <div>
-        <label htmlFor="password" className="mb-1 block text-sm font-medium">
+        <label htmlFor="password" className={labelClass}>
           Password
         </label>
         <input
@@ -60,12 +64,12 @@ export default function SignupForm() {
           autoComplete="new-password"
           required
           minLength={8}
-          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-black"
+          className={inputClass}
         />
       </div>
 
       {state.error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>
+        <p className="rounded-drawer bg-rust/10 px-3 py-2 text-sm text-rust">{state.error}</p>
       )}
 
       <SubmitButton pendingText="Creating account…">Create account</SubmitButton>
