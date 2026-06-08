@@ -190,16 +190,7 @@ export default async function PostDetailPage({ params }: Props) {
           </div>
         )}
         {post.user_id === user.id ? (
-          <OwnerPostControls
-            postId={post.id}
-            initial={{
-              caption: post.caption ?? '',
-              styleTags: post.style_tags,
-              eventTags: post.event_tags,
-              season: post.season ?? '',
-              ratingsEnabled: post.ratings_enabled,
-            }}
-          />
+          <OwnerPostControls postId={post.id} />
         ) : (
           <ReportAction postId={post.id} />
         )}
