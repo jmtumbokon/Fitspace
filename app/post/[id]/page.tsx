@@ -273,7 +273,16 @@ export default async function PostDetailPage({ params }: Props) {
               )}
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-ink">
-                  <span className="font-semibold text-sage">{comment.profile?.username ?? 'unknown'}</span>{' '}
+                  {comment.profile?.username ? (
+                    <Link
+                      href={`/u/${comment.profile.username}`}
+                      className="font-semibold text-sage hover:underline"
+                    >
+                      {comment.profile.username}
+                    </Link>
+                  ) : (
+                    <span className="font-semibold text-sage">unknown</span>
+                  )}{' '}
                   {comment.body}
                 </p>
                 <div className="mt-0.5 flex items-center gap-3 text-xs text-ink-soft">
