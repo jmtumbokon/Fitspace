@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { deleteComment } from '@/app/actions/comments'
 import LikeButton from '@/components/LikeButton'
+import MobileHeader from '@/components/MobileHeader'
 import ReportAction from '@/components/ReportAction'
 import SaveButton from '@/components/SaveButton'
 import { createClient } from '@/lib/supabase/server'
@@ -112,6 +113,11 @@ export default async function PostDetailPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-2xl md:py-8">
+      {/* Full-bleed sticky header; px-5 cancels the component's -mx-5 */}
+      <div className="px-5">
+        <MobileHeader />
+      </div>
+
       {/* Author header */}
       <div className="flex items-center gap-3 px-4 py-3">
         {profile?.avatar_url ? (

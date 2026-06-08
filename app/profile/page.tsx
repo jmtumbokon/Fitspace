@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import MobileHeader from '@/components/MobileHeader'
 import { createClient } from '@/lib/supabase/server'
 import { signOut } from '@/app/actions/auth'
 
@@ -20,8 +21,9 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-8">
-      <div className="flex items-start justify-between">
+    <div className="mx-auto max-w-2xl px-5 pb-16">
+      <MobileHeader />
+      <div className="flex items-start justify-between pt-7">
         <div>
           <h1 className="text-2xl font-bold">
             {profile.display_name ?? profile.username}

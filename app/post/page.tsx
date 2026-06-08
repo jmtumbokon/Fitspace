@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import MobileHeader from '@/components/MobileHeader'
 import { activeChallengesQuery, todayISO, type ChallengeRow } from '@/lib/challenges'
 import { createClient } from '@/lib/supabase/server'
 import NewPostForm from './NewPostForm'
@@ -18,11 +19,14 @@ export default async function PostPage() {
   }))
 
   return (
-    <div className="mx-auto max-w-lg px-5 py-10">
-      <h1 className="font-serif text-[29px] font-medium tracking-[-0.4px]">Share a fit</h1>
-      <p className="mt-1.5 text-[13.5px] text-ink-soft">
-        Post your outfit, tag the pieces, and let people shop the look.
-      </p>
+    <div className="mx-auto max-w-lg px-5 pb-16">
+      <MobileHeader />
+      <div className="pt-7">
+        <h1 className="font-serif text-[29px] font-medium tracking-[-0.4px]">Share a fit</h1>
+        <p className="mt-1.5 text-[13.5px] text-ink-soft">
+          Post your outfit, tag the pieces, and let people shop the look.
+        </p>
+      </div>
       <div className="mt-8">
         <NewPostForm userId={user.id} challenges={challenges} />
       </div>
