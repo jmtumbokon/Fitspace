@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { publishPost, type NewOutfitItem } from '@/app/actions/posts'
+import Chip from '@/components/Chip'
 import { createClient } from '@/lib/supabase/client'
 import {
   MAX_POST_IMAGES,
@@ -13,7 +14,9 @@ import {
 import { formatPrice } from '@/lib/utils'
 
 const inputClass =
-  'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-black'
+  'w-full rounded-drawer border border-line bg-panel px-3.5 py-2.5 text-sm text-ink outline-none transition-colors duration-[220ms] focus:border-ink placeholder:text-ink-soft/55'
+const labelClass = 'mb-1 block text-[13.5px] font-medium text-ink'
+const optionalClass = 'font-normal text-ink-soft'
 
 type ItemRow = { brand: string; item_name: string; price: string; purchase_url: string }
 
@@ -137,13 +140,13 @@ export default function NewPostForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       {/* Photos */}
       <div>
-        <span className="mb-2 block text-sm font-medium">Photos</span>
+        <span className="mb-2 block text-[13.5px] font-medium text-ink">Photos</span>
         <div className="grid grid-cols-4 gap-2">
           {previews.map((src, index) => (
-            <div key={src} className="relative aspect-[4/5] overflow-hidden rounded-lg bg-neutral-100">
+            <div key={src} className="relative aspect-[4/5] overflow-hidden rounded-[10px] border border-line-soft bg-bg2">
               <Image src={src} alt={`Photo ${index + 1}`} fill className="object-cover" unoptimized />
               {index === 0 && (
-                <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                <span className="absolute left-1 top-1 rounded bg-ink/70 px-1.5 py-0.5 text-[10px] font-medium text-bg">
                   Cover
                 </span>
               )}
@@ -151,14 +154,14 @@ export default function NewPostForm({
                 type="button"
                 onClick={() => setFiles((prev) => prev.filter((_, i) => i !== index))}
                 aria-label={`Remove photo ${index + 1}`}
-                className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white"
+                className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-ink/70 text-xs text-bg transition-colors hover:bg-rust"
               >
                 ×
               </button>
             </div>
           ))}
           {files.length < MAX_POST_IMAGES && (
-            <label className="flex aspect-[4/5] cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-neutral-300 text-neutral-400 hover:border-neutral-500 hover:text-neutral-600">
+            <label className="flex aspect-[4/5] cursor-pointer flex-col items-center justify-center gap-1 rounded-[10px] border-2 border-dashed border-line text-ink-soft transition-colors hover:border-ink-soft hover:text-ink">
               <span className="text-2xl leading-none">+</span>
               <span className="text-xs">Add</span>
               <input
@@ -174,14 +177,14 @@ export default function NewPostForm({
             </label>
           )}
         </div>
-        <p className="mt-1 text-xs text-neutral-400">
+        <p className="mt-1 text-xs text-ink-soft">
           Up to {MAX_POST_IMAGES} photos. The first one is your cover.
         </p>
       </div>
 
       {/* Caption */}
       <div>
-        <label htmlFor="caption" className="mb-1 block text-sm font-medium">
+        <label htmlFor="caption" className={labelClass}>
           Caption
         </label>
         <textarea
@@ -191,40 +194,27 @@ export default function NewPostForm({
           value={caption}
           onChange={(e) => setCaption(e.target.value)}
           placeholder="Tell the story of this fit…"
-          className={inputClass}
+          className={`${inputClass} resize-none`}
         />
       </div>
 
       {/* Style tags */}
       <fieldset>
-        <legend className="mb-2 text-sm font-medium">Style</legend>
+        <legend className="mb-2 text-[13.5px] font-medium text-ink">Style</legend>
         <div className="flex flex-wrap gap-2">
-          {STYLE_PERSONAS.map((tag) => {
-            const selected = styleTags.includes(tag)
-            return (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => toggleStyleTag(tag)}
-                aria-pressed={selected}
-                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                  selected
-                    ? 'border-black bg-black text-white'
-                    : 'border-neutral-300 text-neutral-600 hover:border-neutral-500'
-                }`}
-              >
-                {tag}
-              </button>
-            )
-          })}
+          {STYLE_PERSONAS.map((tag) => (
+            <Chip key={tag} on={styleTags.includes(tag)} onClick={() => toggleStyleTag(tag)}>
+              {tag}
+            </Chip>
+          ))}
         </div>
       </fieldset>
 
       {/* Event tags + season */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="event_tags" className="mb-1 block text-sm font-medium">
-            Occasion <span className="font-normal text-neutral-400">(comma-separated)</span>
+          <label htmlFor="event_tags" className={labelClass}>
+            Occasion <span className={optionalClass}>(comma-separated)</span>
           </label>
           <input
             id="event_tags"
@@ -236,8 +226,8 @@ export default function NewPostForm({
           />
         </div>
         <div>
-          <label htmlFor="season" className="mb-1 block text-sm font-medium">
-            Season <span className="font-normal text-neutral-400">(optional)</span>
+          <label htmlFor="season" className={labelClass}>
+            Season <span className={optionalClass}>(optional)</span>
           </label>
           <select
             id="season"
@@ -258,32 +248,25 @@ export default function NewPostForm({
       {/* Challenges */}
       {challenges.length > 0 && (
         <fieldset>
-          <legend className="mb-2 text-sm font-medium">
-            Challenges{' '}
-            <span className="font-normal text-neutral-400">(optional — one per post)</span>
+          <legend className="mb-2 text-[13.5px] font-medium text-ink">
+            Challenges <span className={optionalClass}>(optional — one per post)</span>
           </legend>
           <div className="flex flex-wrap gap-2">
             {challenges.map((challenge) => {
               const selected = challengeTag === challenge.tag
               return (
-                <button
+                <Chip
                   key={challenge.tag}
-                  type="button"
+                  on={selected}
                   onClick={() => setChallengeTag(selected ? null : challenge.tag)}
-                  aria-pressed={selected}
-                  className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                    selected
-                      ? 'border-black bg-black text-white'
-                      : 'border-neutral-300 text-neutral-600 hover:border-neutral-500'
-                  }`}
                 >
                   {challenge.title}
-                </button>
+                </Chip>
               )
             })}
           </div>
           {challengeTag && (
-            <p className="mt-1 text-xs text-neutral-400">
+            <p className="mt-2 text-xs text-ink-soft">
               Tagged #{challengeTag} — this fit enters the challenge.
             </p>
           )}
@@ -293,18 +276,18 @@ export default function NewPostForm({
       {/* Outfit items */}
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-sm font-medium">
-            Outfit items <span className="font-normal text-neutral-400">(optional)</span>
+          <span className="text-[13.5px] font-medium text-ink">
+            Outfit items <span className={optionalClass}>(optional)</span>
           </span>
           {totalCost > 0 && (
-            <span className="text-xs font-medium text-green-700">
+            <span className="text-xs font-semibold text-rust">
               Total: {formatPrice(totalCost)}
             </span>
           )}
         </div>
         <div className="flex flex-col gap-3">
           {items.map((item, index) => (
-            <div key={index} className="rounded-lg border border-neutral-200 p-3">
+            <div key={index} className="rounded-drawer border border-line bg-panel p-3">
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="text"
@@ -340,7 +323,7 @@ export default function NewPostForm({
               <button
                 type="button"
                 onClick={() => setItems((prev) => prev.filter((_, i) => i !== index))}
-                className="mt-2 text-xs text-red-500 hover:underline"
+                className="mt-2 text-xs font-medium text-rust hover:underline"
               >
                 Remove item
               </button>
@@ -349,7 +332,7 @@ export default function NewPostForm({
           <button
             type="button"
             onClick={() => setItems((prev) => [...prev, { ...emptyItem }])}
-            className="rounded-lg border border-dashed border-neutral-300 py-2 text-sm text-neutral-500 hover:border-neutral-500 hover:text-neutral-700"
+            className="rounded-drawer border border-dashed border-line py-2 text-sm text-ink-soft transition-colors hover:border-ink-soft hover:text-ink"
           >
             + Add item
           </button>
@@ -357,24 +340,24 @@ export default function NewPostForm({
       </div>
 
       {/* Ratings toggle */}
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex items-center gap-2 text-sm text-ink">
         <input
           type="checkbox"
           checked={ratingsEnabled}
           onChange={(e) => setRatingsEnabled(e.target.checked)}
-          className="h-4 w-4 accent-black"
+          className="h-4 w-4 accent-ink"
         />
         Let people rate this fit
       </label>
 
       {error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>
+        <p className="rounded-drawer bg-rust/10 px-3 py-2 text-sm text-rust">{error}</p>
       )}
 
       <button
         type="submit"
         disabled={busy}
-        className="rounded-lg bg-black py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-85 disabled:opacity-50"
+        className="rounded-pill bg-ink py-3 text-sm font-semibold text-bg transition-colors duration-[250ms] hover:bg-rust disabled:opacity-60"
       >
         {uploading ? 'Uploading photos…' : isPending ? 'Publishing…' : 'Share fit'}
       </button>

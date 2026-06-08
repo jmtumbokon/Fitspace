@@ -18,12 +18,12 @@ export default async function PostPage() {
   }))
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-8">
-      <h1 className="text-2xl font-bold">Share a fit</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+    <div className="mx-auto max-w-lg px-5 py-10">
+      <h1 className="font-serif text-[29px] font-medium tracking-[-0.4px]">Share a fit</h1>
+      <p className="mt-1.5 text-[13.5px] text-ink-soft">
         Post your outfit, tag the pieces, and let people shop the look.
       </p>
-      <div className="mt-6">
+      <div className="mt-8">
         <NewPostForm userId={user.id} challenges={challenges} />
       </div>
     </div>
