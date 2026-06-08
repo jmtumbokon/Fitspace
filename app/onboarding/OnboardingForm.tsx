@@ -1,16 +1,34 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useFormState } from 'react-dom'
+import { useFormState, useFormStatus } from 'react-dom'
 import { completeOnboarding, type AuthState } from '@/app/actions/auth'
+import Chip from '@/components/Chip'
 import { createClient } from '@/lib/supabase/client'
 import { AVATARS_BUCKET, BODY_TYPES, MAX_AVATAR_BYTES, STYLE_PERSONAS } from '@/lib/constants'
-import SubmitButton from '@/components/SubmitButton'
 
 const initialState: AuthState = { error: null }
 
 const inputClass =
-  'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-black'
+  'w-full rounded-drawer border border-line bg-panel px-3.5 py-2.5 text-sm text-ink outline-none transition-colors duration-[220ms] focus:border-ink placeholder:text-ink-soft/55'
+
+const labelClass = 'mb-1 block text-[13.5px] font-medium text-ink'
+const optionalClass = 'font-normal text-ink-soft'
+
+// Local closet-pill submit — keeps the shared SubmitButton (login/signup)
+// on its original styling.
+function FinishButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="rounded-pill bg-ink py-3 text-sm font-semibold text-bg transition-colors duration-[250ms] hover:bg-rust disabled:opacity-60"
+    >
+      {pending ? 'Saving…' : 'Finish setup'}
+    </button>
+  )
+}
 
 export default function OnboardingForm({
   userId,
@@ -118,7 +136,7 @@ export default function OnboardingForm({
           )}
         </span>
         <div className="min-w-0">
-          <span className="block text-sm font-medium text-ink">Profile photo</span>
+          <span className="block text-[13.5px] font-medium text-ink">Profile photo</span>
           <span className="mt-0.5 block text-[12.5px] text-ink-soft">
             Optional · square images look best, up to 5MB
           </span>
@@ -140,7 +158,7 @@ export default function OnboardingForm({
       </div>
 
       <div>
-        <label htmlFor="username" className="mb-1 block text-sm font-medium">
+        <label htmlFor="username" className={labelClass}>
           Username
         </label>
         <input
@@ -157,46 +175,37 @@ export default function OnboardingForm({
       </div>
 
       <div>
-        <label htmlFor="display_name" className="mb-1 block text-sm font-medium">
-          Display name <span className="font-normal text-neutral-400">(optional)</span>
+        <label htmlFor="display_name" className={labelClass}>
+          Display name <span className={optionalClass}>(optional)</span>
         </label>
         <input id="display_name" name="display_name" type="text" maxLength={50} className={inputClass} />
       </div>
 
       <div>
-        <label htmlFor="bio" className="mb-1 block text-sm font-medium">
-          Bio <span className="font-normal text-neutral-400">(optional)</span>
+        <label htmlFor="bio" className={labelClass}>
+          Bio <span className={optionalClass}>(optional)</span>
         </label>
-        <textarea id="bio" name="bio" rows={3} maxLength={300} className={inputClass} />
+        <textarea id="bio" name="bio" rows={3} maxLength={300} className={`${inputClass} resize-none`} />
       </div>
 
       <fieldset>
-        <legend className="mb-2 text-sm font-medium">Your style</legend>
+        <legend className="mb-2 text-[13.5px] font-medium text-ink">Your style</legend>
         <div className="flex flex-wrap gap-2">
-          {STYLE_PERSONAS.map((persona) => {
-            const selected = personas.includes(persona)
-            return (
-              <button
-                key={persona}
-                type="button"
-                onClick={() => togglePersona(persona)}
-                aria-pressed={selected}
-                className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                  selected
-                    ? 'border-black bg-black text-white'
-                    : 'border-neutral-300 text-neutral-600 hover:border-neutral-500'
-                }`}
-              >
-                {persona}
-              </button>
-            )
-          })}
+          {STYLE_PERSONAS.map((persona) => (
+            <Chip
+              key={persona}
+              on={personas.includes(persona)}
+              onClick={() => togglePersona(persona)}
+            >
+              {persona}
+            </Chip>
+          ))}
         </div>
       </fieldset>
 
       <div>
-        <label htmlFor="body_type" className="mb-1 block text-sm font-medium">
-          Body type <span className="font-normal text-neutral-400">(optional)</span>
+        <label htmlFor="body_type" className={labelClass}>
+          Body type <span className={optionalClass}>(optional)</span>
         </label>
         <select id="body_type" name="body_type" defaultValue="" className={inputClass}>
           <option value="">Prefer not to say</option>
@@ -209,8 +218,8 @@ export default function OnboardingForm({
       </div>
 
       <div>
-        <span className="mb-1 block text-sm font-medium">
-          Sizes <span className="font-normal text-neutral-400">(optional)</span>
+        <span className={labelClass}>
+          Sizes <span className={optionalClass}>(optional)</span>
         </span>
         <div className="grid grid-cols-3 gap-2">
           <input name="size_top" type="text" placeholder="Top (M)" maxLength={10} className={inputClass} />
@@ -220,10 +229,10 @@ export default function OnboardingForm({
       </div>
 
       {state.error && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{state.error}</p>
+        <p className="rounded-drawer bg-rust/10 px-3 py-2 text-sm text-rust">{state.error}</p>
       )}
 
-      <SubmitButton pendingText="Saving…">Finish</SubmitButton>
+      <FinishButton />
     </form>
   )
 }

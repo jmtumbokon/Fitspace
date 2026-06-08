@@ -21,9 +21,9 @@ export default async function OnboardingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-10">
-      <h1 className="text-2xl font-bold">Set up your profile</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+    <div className="mx-auto max-w-lg px-5 py-12">
+      <h1 className="font-serif text-[29px] font-medium tracking-[-0.4px]">Set up your closet</h1>
+      <p className="mt-1.5 text-[13.5px] text-ink-soft">
         Tell us about your style so we can personalize your feed. You can change all of this later.
       </p>
       <div className="mt-8">
