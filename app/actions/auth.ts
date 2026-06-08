@@ -3,7 +3,7 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { USERNAME_REGEX } from '@/lib/constants'
+import { AVATARS_BUCKET, USERNAME_REGEX } from '@/lib/constants'
 
 export type AuthState = {
   error: string | null
@@ -108,6 +108,19 @@ export async function completeOnboarding(_prev: AuthState, formData: FormData): 
   const size_bottom = String(formData.get('size_bottom') ?? '').trim() || null
   const size_shoes = String(formData.get('size_shoes') ?? '').trim() || null
 
+  // Avatar is uploaded client-side; only accept a public URL from the
+  // avatars bucket under this user's own folder (mirrors storage RLS).
+  // Empty = skipped, so avatar_url stays null and the fallback shows.
+  const avatarInput = String(formData.get('avatar_url') ?? '').trim()
+  const avatarPrefix = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${AVATARS_BUCKET}/${user.id}/`
+  let avatar_url: string | undefined
+  if (avatarInput) {
+    if (!avatarInput.startsWith(avatarPrefix)) {
+      return { error: 'Invalid avatar image.' }
+    }
+    avatar_url = avatarInput
+  }
+
   const { error } = await supabase
     .from('profiles')
     .update({
@@ -119,6 +132,8 @@ export async function completeOnboarding(_prev: AuthState, formData: FormData): 
       size_top,
       size_bottom,
       size_shoes,
+      // Only overwrite avatar_url when one was uploaded this session
+      ...(avatar_url !== undefined && { avatar_url }),
       onboarded: true,
     })
     .eq('id', user.id)

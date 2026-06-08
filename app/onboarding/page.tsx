@@ -12,7 +12,7 @@ export default async function OnboardingPage() {
   // Profile row is auto-created by the handle_new_user trigger on signup.
   const { data: profile } = await supabase
     .from('profiles')
-    .select('username, display_name, bio, style_personas, body_type, size_top, size_bottom, size_shoes, onboarded')
+    .select('username, display_name, bio, style_personas, body_type, size_top, size_bottom, size_shoes, avatar_url, onboarded')
     .eq('id', user.id)
     .single()
 
@@ -28,8 +28,10 @@ export default async function OnboardingPage() {
       </p>
       <div className="mt-8">
         <OnboardingForm
+          userId={user.id}
           initialUsername={profile?.username ?? ''}
           initialPersonas={profile?.style_personas ?? []}
+          initialAvatarUrl={profile?.avatar_url ?? null}
         />
       </div>
     </div>

@@ -23,3 +23,4 @@ export const OUTFITS_BUCKET = 'outfits'
 export const AVATARS_BUCKET = 'avatars'
 
 export const MAX_POST_IMAGES = 4
+export const MAX_AVATAR_BYTES = 5 * 1024 * 1024 // 5MB
