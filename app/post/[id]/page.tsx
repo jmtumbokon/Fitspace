@@ -258,19 +258,28 @@ export default async function PostDetailPage({ params }: Props) {
           )}
           {commentList.map((comment) => (
             <div key={comment.id} className="flex items-start gap-3">
-              {comment.profile?.avatar_url ? (
-                <Image
-                  src={comment.profile.avatar_url}
-                  alt={comment.profile.username}
-                  width={28}
-                  height={28}
-                  className="h-7 w-7 rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bg2 text-xs font-bold uppercase text-ink-soft">
-                  {(comment.profile?.username ?? '?')[0]}
-                </div>
-              )}
+              {(() => {
+                const avatar = comment.profile?.avatar_url ? (
+                  <Image
+                    src={comment.profile.avatar_url}
+                    alt={comment.profile.username}
+                    width={28}
+                    height={28}
+                    className="h-7 w-7 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bg2 text-xs font-bold uppercase text-ink-soft">
+                    {(comment.profile?.username ?? '?')[0]}
+                  </div>
+                )
+                return comment.profile?.username ? (
+                  <Link href={`/u/${comment.profile.username}`} className="shrink-0">
+                    {avatar}
+                  </Link>
+                ) : (
+                  avatar
+                )
+              })()}
               <div className="min-w-0 flex-1">
                 <p className="text-sm text-ink">
                   {comment.profile?.username ? (
