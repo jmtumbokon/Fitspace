@@ -189,6 +189,14 @@ export default function PeekOverlay({
                   {isFollowing ? 'Following — tap to unfollow' : `Follow ${firstName}'s closet`}
                 </button>
               )}
+
+              <Link
+                href={isOwn ? '/profile' : `/u/${closet.username}`}
+                onClick={onClose}
+                className="mt-3 block text-center text-[13px] font-semibold text-ink-soft transition-colors duration-[220ms] hover:text-rust"
+              >
+                View full closet →
+              </Link>
             </div>
           </motion.div>
         </motion.div>
